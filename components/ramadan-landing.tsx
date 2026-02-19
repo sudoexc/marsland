@@ -12,7 +12,7 @@ const heroBadges = [
   { label: "Live", colorClass: "mh-bg-green" },
   { label: "AI-перевод", colorClass: "mh-bg-purple" },
   { label: "Спринты", colorClass: "mh-bg-orange" },
-  { label: "MarsHub alpha", colorClass: "mh-bg-ink" },
+  { label: "MarsHub", colorClass: "mh-bg-ink" },
 ] as const;
 
 const todayChecklist = [
@@ -25,7 +25,7 @@ const todayChecklist = [
 
 const poweredByItems = [
   "Единый вход Mars ID",
-  "Публикация и каталог проектов (скоро)",
+  "Публикация и каталог проектов",
   "Шаблоны сервисов",
   "Инструменты команды",
   "AI-агенты и автоматика",
@@ -94,13 +94,13 @@ const criticalDirections = [
 const roadmap = [
   {
     week: "Сейчас",
-    title: "Альфа-превью",
+    title: "Активный хакатон",
     text: "Проверяем процесс, правила и рабочий ритм команды.",
   },
   {
-    week: "Ближайшие дни",
+    week: "Уже доступно",
     title: "Публикация в MarsHub",
-    text: "Доводим механику публикации проектов внутри платформы.",
+    text: "Публикуй проекты и используй инструменты платформы прямо сейчас.",
   },
   {
     week: "После стабилизации",
@@ -133,7 +133,7 @@ const faqItems = [
   },
   {
     question: "Нужно публиковать прямо сейчас?",
-    answer: "Нет. Сейчас альфа-превью, публикация в MarsHub откроется скоро.",
+    answer: "Нет. Публикуй проекты в MarsHub уже сейчас.",
   },
   {
     question: "Можно делать свою идею, а не брать задачу?",
@@ -204,14 +204,12 @@ export default function LandingPage() {
           <p className="mt-5 max-w-3xl text-base leading-relaxed text-zinc-700 sm:text-lg">
             30 дней инженерного ритма внутри MarsHub.
             <br />
-            Сейчас это полузакрытое альфа-превью.
-            <br />
-            Спокойно собираем рабочие AI-проекты.
+            Собираем рабочие AI-проекты и публикуем через MarsHub.
           </p>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-zinc-700 sm:text-lg">
-            Пока кодим в любых редакторах.
+            Кодишь в любом редакторе.
             <br />
-            Публикацию через MarsHub включим в ближайшие дни.
+            Публикуешь результат прямо в MarsHub.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -280,10 +278,7 @@ export default function LandingPage() {
         <section className="mh-card animate-rise mt-8 p-6 md:p-8" style={{ animationDelay: "110ms" }}>
           <h2 className="text-3xl font-extrabold text-zinc-950 sm:text-4xl">Что это вообще?</h2>
           <p className="mt-4 max-w-4xl text-base leading-relaxed text-zinc-700">
-            Это альфа-режим внутри MarsHub перед полноценным запуском.
-          </p>
-          <p className="mt-3 max-w-4xl text-base leading-relaxed text-zinc-700">
-            Сейчас можно кодить где удобно, обязательной публикации сегодня нет.
+            Это хакатон внутри MarsHub: кодишь, делаешь результат, публикуешь в экосистеме.
           </p>
           <p className="mt-3 max-w-4xl text-base leading-relaxed text-zinc-700">
             Хочешь, берешь нашу задачу. Хочешь, делаешь свой AI-ассистент.
@@ -308,7 +303,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="mt-4 max-w-4xl text-base leading-relaxed text-zinc-700">
-            Это полузакрытая альфа, чтобы довести процесс до нормального релиза.
+            MarsHub уже работает — публикуй проекты, используй инструменты команды прямо сейчас.
           </p>
         </section>
 
@@ -436,7 +431,7 @@ export default function LandingPage() {
             <div>
               <p className="text-lg font-extrabold text-zinc-950">Vibe Ramadan Hackathon</p>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-700">
-                Альфа-режим разработки внутри MarsHub.
+                Разработка внутри экосистемы MarsHub.
               </p>
               <p className="mt-2 max-w-xl text-sm font-semibold leading-relaxed text-zinc-800">
                 Кодишь где удобно, показываешь результат, потом публикуешь в MarsHub.
@@ -478,8 +473,8 @@ export default function LandingPage() {
           >
             <h3 className="text-2xl font-extrabold text-zinc-950">Ты зарегистрирован ✅</h3>
             <p className="mt-3 text-sm leading-relaxed text-zinc-700 sm:text-base">
-              Это демонстрационная модалка. Реальный вход выполняется через Telegram-бота.
-              Сейчас идет альфа-превью, публикация проектов в MarsHub откроется скоро.
+              Реальный вход выполняется через Telegram-бота.
+              После регистрации публикуй проекты прямо в MarsHub.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <a
