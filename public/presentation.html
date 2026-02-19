@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raqamli Korpus — Цифровой Корпус ВС</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fffff8;
+            --bg-alt: #f5f4ef;
+            --text: #1a1a1a;
+            --text-muted: #666;
+            --accent: #2563eb;
+            --accent-light: #dbeafe;
+            --border: #e5e5e5;
+            --card-bg: white;
+            --uz-gold: #c8a441;
+            --uz-blue: #1a6fb5;
+            --uz-green: #059669;
+            --uz-red: #dc2626;
+            --cyan: #06b6d4;
+            --navy: #0a1628;
+            --navy-mid: #0f2038;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--navy);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 18px;
+        }
+
+        /* ═══ Slides core ═══ */
+        .slides-wrapper { height: 100vh; position: relative; }
+        .slide {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 56px 28px 78px;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+            overflow-y: auto;
+        }
+        .slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+        .slide.exit-left { opacity: 0; transform: translateX(-60px); }
+        .slide-inner { max-width: 1160px; width: 100%; position: relative; z-index: 2; }
+
+        /* ═══ Slide types ═══ */
+
+        /* --- DARK slides (hero, accent, closing) --- */
+        .slide--dark {
+            background: var(--navy);
+            color: #e8edf5;
+        }
+        .slide--dark h1, .slide--dark h2 { color: #fff; }
+        .slide--dark h3 { color: rgba(255,255,255,0.55); }
+        .slide--dark .text-muted { color: rgba(255,255,255,0.55); }
+
+        /* --- LIGHT slides --- */
+        .slide--light {
+            background: #f8f9fc;
+            color: #1a1a2e;
+        }
+        .slide--light h2 { color: #0f172a; }
+
+        /* --- ACCENT slide (key insight) --- */
+        .slide--accent {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 100%);
+            color: #ecfdf5;
+        }
+        .slide--accent h2 { color: #fff; }
+
+        /* ═══ Background patterns ═══ */
+        .bg-grid {
+            position: absolute; inset: 0; z-index: 0;
+            overflow: hidden; pointer-events: none;
+        }
+
+        /* Animated circuit grid for hero */
+        .bg-circuit {
+            background:
+                linear-gradient(rgba(6,182,212,0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6,182,212,0.07) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 60px; }
+        }
+        .bg-circuit::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 50%, transparent 30%, var(--navy) 80%);
+        }
+
+        /* Glowing orbs */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: orbPulse 6s ease-in-out infinite alternate;
+        }
+        @keyframes orbPulse {
+            0% { opacity: 0.2; transform: scale(1); }
+            100% { opacity: 0.4; transform: scale(1.15); }
+        }
+
+        /* Dot pattern for light slides */
+        .bg-dots {
+            background-image: radial-gradient(circle, #cbd5e1 0.8px, transparent 0.8px);
+            background-size: 24px 24px;
+            opacity: 0.5;
+        }
+
+        /* Topographic lines for accent */
+        .bg-topo {
+            background:
+                repeating-radial-gradient(circle at 30% 60%, transparent, transparent 40px, rgba(255,255,255,0.03) 41px, transparent 42px),
+                repeating-radial-gradient(circle at 70% 40%, transparent, transparent 60px, rgba(255,255,255,0.04) 61px, transparent 62px);
+        }
+
+        /* ═══ Floating particles ═══ */
+        .particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: var(--cyan);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFloat 8s ease-in-out infinite;
+        }
+        @keyframes particleFloat {
+            0% { opacity: 0; transform: translateY(0); }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { opacity: 0; transform: translateY(-120px); }
+        }
+
+        /* ═══ Staggered entrance ═══ */
+        .slide .anim {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .slide.active .anim { opacity: 1; transform: translateY(0); }
+        .slide.active .anim:nth-child(1) { transition-delay: 0.08s; }
+        .slide.active .anim:nth-child(2) { transition-delay: 0.16s; }
+        .slide.active .anim:nth-child(3) { transition-delay: 0.24s; }
+        .slide.active .anim:nth-child(4) { transition-delay: 0.32s; }
+        .slide.active .anim:nth-child(5) { transition-delay: 0.40s; }
+        .slide.active .anim:nth-child(6) { transition-delay: 0.48s; }
+        .slide.active .anim:nth-child(7) { transition-delay: 0.56s; }
+
+        /* ═══ Progress bar ═══ */
+        .slide-progress-bar {
+            position: fixed; top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--cyan), var(--uz-gold), var(--uz-green));
+            transition: width 0.5s ease;
+            z-index: 300;
+        }
+
+        /* ═══ Controls ═══ */
+        .slide-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(15,32,56,0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(6,182,212,0.15);
+            border-radius: 40px;
+            padding: 6px 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            z-index: 200;
+            user-select: none;
+        }
+        .slide-btn {
+            width: 36px; height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 16px;
+            transition: all 0.15s;
+        }
+        .slide-btn:hover { background: rgba(6,182,212,0.15); color: #fff; }
+        .slide-btn:disabled { opacity: 0.2; cursor: default; }
+        .slide-btn:disabled:hover { background: transparent; color: rgba(255,255,255,0.7); }
+        .progress-dots {
+            display: flex; gap: 6px; align-items: center;
+            padding: 0 4px;
+        }
+        .progress-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .progress-dot.active {
+            background: var(--cyan);
+            width: 24px;
+            border-radius: 4px;
+            box-shadow: 0 0 8px rgba(6,182,212,0.4);
+        }
+        .progress-dot:hover:not(.active) { background: rgba(255,255,255,0.4); }
+        .fs-btn {
+            width: 30px; height: 30px; border: none; background: transparent;
+            border-radius: 50%; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.4); font-size: 13px; transition: all 0.15s;
+            margin-left: 2px;
+        }
+        .fs-btn:hover { background: rgba(6,182,212,0.15); color: rgba(255,255,255,0.8); }
+
+        /* ═══ Top bar ═══ */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 200;
+        }
+        .top-bar-left {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 1.5px;
+        }
+        .top-bar-right {
+            display: flex; align-items: center; gap: 10px; position: relative;
+        }
+        .lang-switcher {
+            display: flex; gap: 2px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 2px;
+        }
+        .lang-btn {
+            padding: 3px 10px; border: none; background: transparent;
+            border-radius: 4px; font-size: 11px; font-weight: 600;
+            cursor: pointer; color: rgba(255,255,255,0.4);
+            transition: all 0.2s; font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.3px;
+        }
+        .lang-btn.active {
+            background: rgba(6,182,212,0.2); color: var(--cyan);
+            box-shadow: 0 0 8px rgba(6,182,212,0.15);
+        }
+        .lang-btn:hover:not(.active) { color: rgba(255,255,255,0.7); }
+
+        /* ═══ Typography ═══ */
+        h1 {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 4rem; font-weight: 700; line-height: 1.05;
+            margin-bottom: 16px; letter-spacing: -1px;
+        }
+        h2 {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 2.2rem; font-weight: 600; margin-bottom: 16px;
+            display: flex; align-items: baseline; gap: 14px;
+        }
+        h3 {
+            font-size: 0.78rem; font-weight: 600; margin: 18px 0 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; font-weight: 600;
+            color: var(--cyan);
+            background: rgba(6,182,212,0.1);
+            padding: 3px 10px; border-radius: 4px;
+            border: 1px solid rgba(6,182,212,0.2);
+        }
+        .slide--light .section-number {
+            color: var(--accent);
+            background: var(--accent-light);
+            border-color: transparent;
+        }
+        .subtitle {
+            font-size: 1.2rem; max-width: 560px; line-height: 1.7;
+        }
+        p { margin-bottom: 12px; max-width: 65ch; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* ═══ Hero slide ═══ */
+        .hero-slide { text-align: center; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.25);
+            color: var(--cyan);
+            font-size: 0.72rem; font-weight: 600; padding: 6px 18px;
+            border-radius: 24px; margin-bottom: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1.5px; text-transform: uppercase;
+        }
+        .hero-badge::before {
+            content: ''; width: 6px; height: 6px;
+            background: var(--cyan); border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--cyan); }
+            50% { opacity: 0.5; box-shadow: 0 0 12px var(--cyan); }
+        }
+        .hero-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+            margin-top: 32px;
+        }
+
+        /* Shield icon */
+        .hero-shield {
+            width: 72px; height: 72px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .hero-shield svg {
+            width: 100%; height: 100%;
+            filter: drop-shadow(0 0 20px rgba(6,182,212,0.3));
+        }
+
+        /* ═══ Timeline ═══ */
+        .timeline { position: relative; padding-left: 40px; margin: 20px 0; }
+        .timeline::before {
+            content: ''; position: absolute; left: 13px; top: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--cyan), var(--uz-gold), var(--uz-green));
+            border-radius: 2px;
+        }
+        .timeline-item {
+            position: relative; margin-bottom: 20px;
+            padding: 18px 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            transition: all 0.25s;
+        }
+        .timeline-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(6,182,212,0.2);
+        }
+        .timeline-item::before {
+            content: ''; position: absolute;
+            left: -33px; top: 22px;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 3px solid var(--navy);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
+        }
+        .timeline-item:nth-child(1)::before { background: var(--cyan); box-shadow: 0 0 8px rgba(6,182,212,0.4); }
+        .timeline-item:nth-child(2)::before { background: var(--uz-gold); box-shadow: 0 0 8px rgba(200,164,65,0.4); }
+        .timeline-item:nth-child(3)::before { background: var(--uz-green); box-shadow: 0 0 8px rgba(5,150,105,0.4); }
+        .timeline-dur {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .timeline-item:nth-child(1) .timeline-dur { color: var(--cyan); }
+        .timeline-item:nth-child(2) .timeline-dur { color: var(--uz-gold); }
+        .timeline-item:nth-child(3) .timeline-dur { color: var(--uz-green); }
+        .timeline-item h4 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: #fff; }
+        .timeline-item p { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin: 0; }
+
+        /* ═══ Stat cards (light) ═══ */
+        .stat-row {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin: 16px 0;
+        }
+        .stat-card {
+            background: white; border: 1px solid #e2e8f0;
+            border-radius: 14px; padding: 22px; text-align: center;
+            position: relative; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: all 0.25s;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .stat-card::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+        }
+        .stat-card:nth-child(1)::after { background: var(--uz-blue); }
+        .stat-card:nth-child(2)::after { background: var(--uz-gold); }
+        .stat-card:nth-child(3)::after { background: var(--uz-green); }
+        .stat-icon { margin-bottom: 8px; }
+        .stat-icon svg { width: 32px; height: 32px; }
+        .stat-num {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1.1;
+        }
+        .stat-label { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+
+        /* ═══ Distribution cards ═══ */
+        .dist-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin: 16px 0;
+        }
+        .dist-card {
+            background: white; border: 1px solid #e2e8f0;
+            border-radius: 14px; padding: 22px 16px; text-align: center;
+            transition: all 0.25s; cursor: default;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .dist-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .dist-icon {
+            width: 48px; height: 48px; margin: 0 auto 12px;
+            border-radius: 12px; display: flex; align-items: center;
+            justify-content: center;
+        }
+        .dist-card:nth-child(1) .dist-icon { background: #dbeafe; color: var(--uz-blue); }
+        .dist-card:nth-child(2) .dist-icon { background: #fef3c7; color: #d97706; }
+        .dist-card:nth-child(3) .dist-icon { background: #d1fae5; color: var(--uz-green); }
+        .dist-icon svg { width: 24px; height: 24px; }
+        .dist-card h5 { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; color: #0f172a; }
+        .dist-card p { font-size: 0.78rem; color: #64748b; margin: 0; max-width: none; }
+
+        /* ═══ Info blocks ═══ */
+        .info-cols {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0;
+        }
+        .info-block {
+            padding: 18px 20px; border-radius: 12px;
+            background: #f1f5f9; border: 1px solid #e2e8f0;
+        }
+        .info-block-label {
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; color: #94a3b8; margin-bottom: 6px;
+        }
+        .info-block-val { font-size: 0.9rem; font-weight: 500; line-height: 1.5; color: #1e293b; }
+
+        /* ═══ Track cards ═══ */
+        .track-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+        .track-card {
+            border-radius: 14px; padding: 20px;
+            border: 1px solid #e2e8f0; background: white;
+            position: relative; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .track-card::before {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
+        }
+        .track-card.blue::before { background: var(--uz-blue); }
+        .track-card.gold::before { background: var(--uz-gold); }
+        .track-label {
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 6px;
+        }
+        .track-card.blue .track-label { color: var(--uz-blue); }
+        .track-card.gold .track-label { color: #b45309; }
+        .track-card p { font-size: 0.88rem; margin: 0; line-height: 1.5; color: #334155; }
+
+        /* ═══ Callout ═══ */
+        .callout {
+            border-radius: 12px; padding: 18px 22px; margin: 16px 0;
+            display: flex; gap: 16px; align-items: flex-start;
+        }
+        .callout--gold {
+            background: linear-gradient(135deg, #fefce8, #fef3c7);
+            border: 1px solid rgba(200,164,65,0.25);
+        }
+        .callout--blue {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1px solid rgba(37,99,235,0.2);
+        }
+        .callout-icon { flex-shrink: 0; margin-top: 2px; }
+        .callout-icon svg { width: 22px; height: 22px; }
+        .callout h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; color: #1e293b; }
+        .callout p { font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.6; }
+
+        /* ═══ Dark slide glass overrides ═══ */
+        .slide--dark .info-block,
+        .slide--dark .track-card,
+        .slide--dark .dist-card,
+        .slide--dark .stat-card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: none;
+            backdrop-filter: blur(6px);
+        }
+        .slide--dark .info-block-label {
+            color: rgba(255,255,255,0.45);
+        }
+        .slide--dark .info-block-val,
+        .slide--dark .track-card p,
+        .slide--dark .dist-card p,
+        .slide--dark .stat-label {
+            color: rgba(255,255,255,0.78);
+        }
+        .slide--dark .dist-card h5 {
+            color: #eaf2ff;
+        }
+        .slide--dark .track-card.blue::before { background: #38bdf8; }
+        .slide--dark .track-card.gold::before { background: #fbbf24; }
+        .slide--dark .track-card.blue .track-label { color: #7dd3fc; }
+        .slide--dark .track-card.gold .track-label { color: #fcd34d; }
+        .slide--dark .dist-card:nth-child(1) .dist-icon {
+            background: rgba(59,130,246,0.18);
+            color: #93c5fd;
+        }
+        .slide--dark .dist-card:nth-child(2) .dist-icon {
+            background: rgba(251,191,36,0.2);
+            color: #fcd34d;
+        }
+        .slide--dark .dist-card:nth-child(3) .dist-icon {
+            background: rgba(16,185,129,0.2);
+            color: #6ee7b7;
+        }
+        .slide--dark .callout--gold,
+        .slide--dark .callout--blue {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.16);
+            backdrop-filter: blur(6px);
+        }
+        .slide--dark .callout h4 {
+            color: #f8fbff;
+        }
+        .slide--dark .callout p {
+            color: rgba(255,255,255,0.78);
+        }
+
+        /* ═══ Spec cards (dark) ═══ */
+        .spec-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px; margin: 20px 0;
+        }
+        .spec-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 28px 20px; text-align: center;
+            transition: all 0.25s ease; cursor: default;
+            position: relative; overflow: hidden;
+        }
+        .spec-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(6,182,212,0.2);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        }
+        .spec-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        }
+        .spec-card:nth-child(1)::before { background: linear-gradient(90deg, var(--cyan), #22d3ee); }
+        .spec-card:nth-child(2)::before { background: linear-gradient(90deg, var(--uz-gold), #fbbf24); }
+        .spec-card:nth-child(3)::before { background: linear-gradient(90deg, var(--uz-green), #34d399); }
+        .spec-icon {
+            width: 56px; height: 56px; margin: 0 auto 14px;
+            border-radius: 14px; display: flex; align-items: center;
+            justify-content: center;
+        }
+        .spec-card:nth-child(1) .spec-icon { background: rgba(6,182,212,0.12); color: var(--cyan); }
+        .spec-card:nth-child(2) .spec-icon { background: rgba(200,164,65,0.12); color: var(--uz-gold); }
+        .spec-card:nth-child(3) .spec-icon { background: rgba(5,150,105,0.12); color: var(--uz-green); }
+        .spec-icon svg { width: 28px; height: 28px; }
+        .spec-num {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 2.4rem; font-weight: 700; line-height: 1;
+        }
+        .spec-card:nth-child(1) .spec-num { color: var(--cyan); }
+        .spec-card:nth-child(2) .spec-num { color: var(--uz-gold); }
+        .spec-card:nth-child(3) .spec-num { color: var(--uz-green); }
+        .spec-card h4 { font-size: 0.95rem; font-weight: 600; margin: 8px 0 4px; color: #fff; }
+        .spec-card p { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin: 0; max-width: none; }
+
+        /* ═══ Funnel ═══ */
+        .funnel { margin: 20px 0; }
+        .funnel-step {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+        }
+        .funnel-label {
+            font-size: 0.73rem; color: rgba(255,255,255,0.45);
+            min-width: 100px; text-align: right; flex-shrink: 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .funnel-bar-wrap {
+            flex: 1; height: 48px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; overflow: hidden; position: relative;
+        }
+        .funnel-bar {
+            height: 100%; border-radius: 12px;
+            display: flex; align-items: center;
+            padding: 0 18px; color: white; font-weight: 700;
+            font-size: 0.9rem; min-width: fit-content;
+            width: 0;
+            transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .funnel-pct {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem; color: rgba(255,255,255,0.35);
+            min-width: 36px; text-align: left;
+        }
+
+        /* ═══ Big numbers ═══ */
+        .big-nums {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 12px; margin: 20px 0;
+        }
+        .big-num {
+            text-align: center; padding: 24px 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px; position: relative; overflow: hidden;
+        }
+        .big-num .val {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 2.6rem; font-weight: 700; line-height: 1;
+        }
+        .big-num:nth-child(1) .val { color: var(--cyan); }
+        .big-num:nth-child(2) .val { color: var(--uz-gold); }
+        .big-num:nth-child(3) .val { color: var(--uz-green); }
+        .big-num:nth-child(4) .val { color: #a78bfa; }
+        .big-num .lbl {
+            font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 8px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .big-num .arrow {
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+            font-size: 1.5rem; color: rgba(255,255,255,0.1);
+        }
+
+        /* ═══ Accent slide content ═══ */
+        .accent-big {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 2.8rem; font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 24px;
+        }
+        .accent-big strong {
+            color: #fbbf24;
+            text-decoration: underline;
+            text-decoration-color: rgba(251,191,36,0.3);
+            text-underline-offset: 6px;
+        }
+        .accent-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0;
+        }
+        .accent-card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px; padding: 22px;
+            backdrop-filter: blur(4px);
+        }
+        .accent-card h4 {
+            font-size: 0.88rem; font-weight: 600;
+            margin-bottom: 6px; color: #ecfdf5;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .accent-card p {
+            font-size: 0.82rem; color: rgba(255,255,255,0.55);
+            margin: 0; line-height: 1.5;
+        }
+        .accent-note {
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.7);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 16px; margin-top: 8px;
+        }
+
+        /* ═══ CTA / Closing ═══ */
+        .cta-link {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--cyan); color: var(--navy);
+            padding: 16px 36px; border-radius: 12px; text-decoration: none;
+            font-weight: 700; font-size: 1rem; margin-top: 24px;
+            transition: all 0.25s; border: none; cursor: pointer;
+        }
+        .cta-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(6,182,212,0.3);
+        }
+        .cta-link svg { width: 18px; height: 18px; }
+        .closing-mission {
+            font-size: 1.1rem; color: rgba(255,255,255,0.5);
+            max-width: 480px; margin: 0 auto; line-height: 1.7;
+        }
+
+        /* ═══ Keyboard overlay ═══ */
+        .kb-overlay {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.2s;
+        }
+        .kb-overlay.open { opacity: 1; visibility: visible; }
+        .kb-box {
+            background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 28px 36px; max-width: 380px; width: 90%;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+        }
+        .kb-box h3 {
+            text-transform: none; font-size: 1rem; color: #fff;
+            font-weight: 600; margin: 0 0 16px;
+        }
+        .kb-row {
+            display: flex; justify-content: space-between;
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.88rem; color: rgba(255,255,255,0.6);
+        }
+        .kb-row:last-child { border: none; }
+        .kb-key {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 2px 8px; border-radius: 4px; color: var(--cyan);
+        }
+
+        /* ═══ Hint ═══ */
+        .kb-hint {
+            position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%);
+            font-size: 0.7rem; color: rgba(255,255,255,0.25);
+            transition: opacity 0.5s; z-index: 100;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ═══ Ornament divider ═══ */
+        .ornament-line {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; margin: 16px 0; opacity: 0.2;
+        }
+        .ornament-line::before, .ornament-line::after {
+            content: ''; height: 1px; width: 60px;
+            background: linear-gradient(90deg, transparent, var(--uz-gold), transparent);
+        }
+        .ornament-line svg { width: 16px; height: 16px; fill: var(--uz-gold); }
+
+        /* ═══ Responsive ═══ */
+        @media (max-width: 700px) {
+            .slide { padding: 52px 16px 76px; }
+            h1 { font-size: 2.4rem; }
+            h2 { font-size: 1.6rem; }
+            .subtitle { font-size: 1rem; }
+            .stat-row, .dist-grid, .spec-grid { grid-template-columns: 1fr; }
+            .info-cols, .track-cards, .accent-cards { grid-template-columns: 1fr; }
+            .big-nums { grid-template-columns: repeat(2, 1fr); }
+            .funnel-label { min-width: 70px; font-size: 0.65rem; }
+            .timeline { padding-left: 32px; }
+            .kb-hint { display: none; }
+            .accent-big { font-size: 2rem; }
+        }
+        @media (max-width: 400px) { h1 { font-size: 2rem; } }
+    </style>
+</head>
+<body>
+    <div class="slide-progress-bar" id="progress"></div>
+
+    <!-- Keyboard shortcuts overlay -->
+    <div class="kb-overlay" id="kbOverlay" onclick="this.classList.remove('open')">
+        <div class="kb-box" onclick="event.stopPropagation()">
+            <h3 data-i18n="kb_title">Горячие клавиши</h3>
+            <div class="kb-row"><span data-i18n="kb_next">Следующий слайд</span><span><span class="kb-key">&rarr;</span> <span class="kb-key">Space</span></span></div>
+            <div class="kb-row"><span data-i18n="kb_prev">Предыдущий слайд</span><span class="kb-key">&larr;</span></div>
+            <div class="kb-row"><span data-i18n="kb_fs">Полный экран</span><span class="kb-key">F</span></div>
+            <div class="kb-row"><span data-i18n="kb_help">Эта подсказка</span><span class="kb-key">?</span></div>
+        </div>
+    </div>
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">RAQAMLI KORPUS &middot; 2026</div>
+        <div class="top-bar-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('ru')">RU</button>
+                <button class="lang-btn" onclick="setLang('uz')">UZ</button>
+                <button class="lang-btn" onclick="setLang('en')">EN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDES ══════════ -->
+    <div class="slides-wrapper">
+
+        <!-- SLIDE 1: Hero (DARK) -->
+        <div class="slide slide--dark active">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="bg-orb" style="width:400px;height:400px;background:var(--cyan);top:-100px;right:-100px;"></div>
+            <div class="bg-orb" style="width:300px;height:300px;background:#4f46e5;bottom:-80px;left:-80px;animation-delay:3s;"></div>
+            <div class="particle" style="left:15%;bottom:30%;animation-delay:0s;"></div>
+            <div class="particle" style="left:35%;bottom:20%;animation-delay:2s;"></div>
+            <div class="particle" style="left:55%;bottom:40%;animation-delay:4s;"></div>
+            <div class="particle" style="left:75%;bottom:15%;animation-delay:1s;"></div>
+            <div class="particle" style="left:85%;bottom:35%;animation-delay:5s;"></div>
+            <div class="particle" style="left:25%;bottom:50%;animation-delay:3s;"></div>
+            <div class="particle" style="left:65%;bottom:25%;animation-delay:6s;"></div>
+            <div class="slide-inner hero-slide">
+                <div class="anim">
+                    <div class="hero-shield">
+                        <svg viewBox="0 0 64 64" fill="none">
+                            <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="rgba(6,182,212,0.08)" stroke="var(--cyan)" stroke-width="1.5"/>
+                            <path d="M32 14L16 22v10c0 9.6 6.83 18.56 16 21.33 9.17-2.77 16-11.73 16-21.33V22L32 14z" fill="rgba(6,182,212,0.05)" stroke="rgba(6,182,212,0.3)" stroke-width="1"/>
+                            <circle cx="32" cy="30" r="6" fill="none" stroke="var(--cyan)" stroke-width="1.5"/>
+                            <path d="M32 24v12M26 30h12" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="anim">
+                    <div class="hero-badge"><span data-i18n="badge">Проект 2026</span></div>
+                </div>
+                <h1 class="anim" data-i18n="title">Цифровой Корпус<br>Министерства обороны</h1>
+                <p class="subtitle anim" style="margin:0 auto;color:rgba(255,255,255,0.5);" data-i18n="subtitle">Подготовка военнослужащих в области технологий, ИИ и кибербезопасности в ходе срочной службы</p>
+                <div class="anim">
+                    <div class="ornament-line" style="margin-top:28px;">
+                        <svg viewBox="0 0 16 16"><path d="M8 0l2.5 5.5L16 8l-5.5 2.5L8 16l-2.5-5.5L0 8l5.5-2.5z"/></svg>
+                    </div>
+                </div>
+                <div class="anim hero-meta" data-i18n="hero_meta">O'ZBEKISTON RESPUBLIKASI MUDOFAA VAZIRLIGI</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Pipeline overview (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="bg-orb" style="width:250px;height:250px;background:var(--uz-gold);top:10%;right:5%;opacity:0.15;"></div>
+            <div class="slide-inner">
+                <h2 class="anim"><span class="section-number">01</span><span data-i18n="s1_title">Порядок обучения</span></h2>
+                <p class="anim" style="color:rgba(255,255,255,0.5);" data-i18n="s1_desc">Трёхэтапная система отбора и подготовки. Каждый этап — фильтр: от массового тестирования до профессионального обучения лучших.</p>
+                <div class="timeline anim">
+                    <div class="timeline-item">
+                        <div class="timeline-dur" data-i18n="dur1">1 неделя</div>
+                        <h4 data-i18n="n1">Тестирование и отсев</h4>
+                        <p data-i18n="d1">Оценка знаний, распределение по группам</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dur" data-i18n="dur2">3 недели</div>
+                        <h4 data-i18n="n2">Базовый курс кибербойца</h4>
+                        <p data-i18n="d2">Компьютерная грамотность или ИИ в работе</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dur" data-i18n="dur3">9 месяцев</div>
+                        <h4 data-i18n="n3">Проф. курс-специализация</h4>
+                        <p data-i18n="d3">AI инженер, Кибероборона, БПЛА и FPV</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Testing & screening (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="slide-inner">
+                <h2 class="anim"><span class="section-number">02</span><span data-i18n="s2_title">Тестирование и отсев</span></h2>
+                <div class="info-cols anim">
+                    <div class="info-block">
+                        <div class="info-block-label" data-i18n="proc">Порядок</div>
+                        <div class="info-block-val" data-i18n="s2_proc">Солдаты в компьютерном классе на территории части группами сдают тест на онлайн-платформе</div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-block-label" data-i18n="dur_label">Протяжённость</div>
+                        <div class="info-block-val" data-i18n="dur1">1 неделя</div>
+                    </div>
+                </div>
+                <h3 class="anim" data-i18n="s2_dist">Распределение по группам</h3>
+                <div class="dist-grid anim">
+                    <div class="dist-card">
+                        <div class="dist-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                        </div>
+                        <h5 data-i18n="g1">Без комп. навыков</h5>
+                        <p data-i18n="g1d">Базовый курс компьютерной грамотности</p>
+                    </div>
+                    <div class="dist-card">
+                        <div class="dist-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4c0 3-4 6-4 6s-4-3-4-6a4 4 0 014-4z"/><circle cx="12" cy="14" r="3"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6"/></svg>
+                        </div>
+                        <h5 data-i18n="g2">Есть навыки ПК</h5>
+                        <p data-i18n="g2d">Курс ИИ грамотности</p>
+                    </div>
+                    <div class="dist-card">
+                        <div class="dist-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <h5 data-i18n="g3">Продвинутые</h5>
+                        <p data-i18n="g3d">Менторы (устоз-шогирт)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Basic course (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="slide-inner">
+                <h2 class="anim"><span class="section-number">03</span><span data-i18n="s3_title">Базовый курс кибербойца</span></h2>
+                <div class="info-cols anim">
+                    <div class="info-block">
+                        <div class="info-block-label" data-i18n="proc">Порядок</div>
+                        <div class="info-block-val" data-i18n="s3_proc">Дистанционное обучение через онлайн-платформу в компьютерных классах под наблюдением преподавателей</div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-block-label" data-i18n="dur_label">Протяжённость</div>
+                        <div class="info-block-val" data-i18n="s3_dur">3 недели, через день по 2 часа</div>
+                    </div>
+                </div>
+                <h3 class="anim" data-i18n="s3_tracks">Два трека обучения</h3>
+                <div class="track-cards anim">
+                    <div class="track-card blue">
+                        <div class="track-label" data-i18n="t1l">Для начинающих</div>
+                        <p data-i18n="t1v">Компьютерная грамотность: ПК, почта, документы, безопасность</p>
+                    </div>
+                    <div class="track-card gold">
+                        <div class="track-label" data-i18n="t2l">Для продвинутых</div>
+                        <p data-i18n="t2v">ИИ грамотность: работа с данными, подготовка материалов, AI-инструменты</p>
+                    </div>
+                </div>
+                <div class="callout callout--gold anim">
+                    <div class="callout-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <div>
+                        <h4 data-i18n="us_t">Устоз-шогирт</h4>
+                        <p data-i18n="us_d">Продвинутые солдаты становятся менторами для остальных. Традиционная узбекская система наставничества, адаптированная для цифрового обучения.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Key insight — ALL soldiers get skills (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="bg-orb" style="width:350px;height:350px;background:#34d399;top:-80px;left:-80px;opacity:0.15;"></div>
+            <div class="bg-orb" style="width:250px;height:250px;background:#fbbf24;bottom:-60px;right:-60px;opacity:0.1;animation-delay:2s;"></div>
+            <div class="slide-inner">
+                <div class="anim" style="margin-bottom:8px;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;" data-i18n="key_label">Ключевое</span>
+                </div>
+                <div class="accent-big anim" data-i18n="key_big">За время службы <strong>каждый солдат</strong> получит цифровые навыки</div>
+                <div class="accent-cards anim">
+                    <div class="accent-card">
+                        <h4>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                            <span data-i18n="s3r_v1_short">Компьютерная грамотность</span>
+                        </h4>
+                        <p data-i18n="s3r_v1">Курс общей компьютерной грамотности: пользование компьютером, почтой, документами, безопасность ПК</p>
+                    </div>
+                    <div class="accent-card">
+                        <h4>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                            <span data-i18n="s3r_v2_short">Основы ИИ</span>
+                        </h4>
+                        <p data-i18n="s3r_v2">Основы ИИ: работа с данными, подготовка материалов с помощью AI-инструментов</p>
+                    </div>
+                </div>
+                <p class="accent-note anim" data-i18n="s3r_impact_d">Даже солдаты, не прошедшие на 3 этап, уходят со службы с цифровыми навыками — вклад в цифровизацию страны.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Professional course (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="bg-orb" style="width:300px;height:300px;background:var(--cyan);bottom:-80px;right:-80px;opacity:0.12;"></div>
+            <div class="slide-inner">
+                <h2 class="anim"><span class="section-number">04</span><span data-i18n="s4_title">Профессиональный курс</span></h2>
+                <p class="anim" style="color:rgba(255,255,255,0.45);margin-bottom:6px;" data-i18n="s4_meta">9 месяцев &middot; ежедневно по 3 часа &middot; дистанционно в компьютерных классах</p>
+                <h3 class="anim" style="color:rgba(255,255,255,0.35);" data-i18n="s4_specs">Три специализации</h3>
+                <div class="spec-grid anim">
+                    <div class="spec-card">
+                        <div class="spec-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        </div>
+                        <div class="spec-num" data-counter="250">250</div>
+                        <h4 data-i18n="sp_ai">AI инженер</h4>
+                        <p data-i18n="sp_ai_d">Python, ML, автоматизация, AI-инструменты</p>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M5 12a7 7 0 0014 0"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+                        </div>
+                        <div class="spec-num" data-counter="150">150</div>
+                        <h4 data-i18n="sp_cy">Кибероборона</h4>
+                        <p data-i18n="sp_cy_d">SOC, мониторинг, реагирование на инциденты</p>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 7v6l10 5V13"/><path d="M22 7v6l-10 5V13"/><circle cx="12" cy="3" r="1" fill="currentColor"/></svg>
+                        </div>
+                        <div class="spec-num" data-counter="100">100</div>
+                        <h4 data-i18n="sp_dr">БПЛА и FPV</h4>
+                        <p data-i18n="sp_dr_d">Операторы дронов, embedded, прошивки</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Results funnel (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="slide-inner">
+                <h2 class="anim"><span class="section-number">05</span><span data-i18n="s5_title">Результат 2026-2027</span></h2>
+                <div class="big-nums anim">
+                    <div class="big-num">
+                        <div class="val" data-counter="5000">5 000</div>
+                        <div class="lbl" data-i18n="bn1">тестирование</div>
+                        <div class="arrow">&rsaquo;</div>
+                    </div>
+                    <div class="big-num">
+                        <div class="val" data-counter="3000">3 000</div>
+                        <div class="lbl" data-i18n="bn2">базовый курс</div>
+                        <div class="arrow">&rsaquo;</div>
+                    </div>
+                    <div class="big-num">
+                        <div class="val" data-counter="1500">1 500</div>
+                        <div class="lbl" data-i18n="bn3">проф. обучение</div>
+                        <div class="arrow">&rsaquo;</div>
+                    </div>
+                    <div class="big-num">
+                        <div class="val" data-counter="500">500</div>
+                        <div class="lbl" data-i18n="bn4">выпуск</div>
+                    </div>
+                </div>
+                <div class="funnel anim" id="funnel">
+                    <div class="funnel-step">
+                        <div class="funnel-label" data-i18n="fn1">Тестирование</div>
+                        <div class="funnel-bar-wrap"><div class="funnel-bar" data-w="100%" style="background:linear-gradient(90deg, var(--cyan), #22d3ee);">5 000</div></div>
+                        <div class="funnel-pct">100%</div>
+                    </div>
+                    <div class="funnel-step">
+                        <div class="funnel-label" data-i18n="fn2">Базовый курс</div>
+                        <div class="funnel-bar-wrap"><div class="funnel-bar" data-w="60%" style="background:linear-gradient(90deg, var(--uz-gold), #fbbf24);">3 000</div></div>
+                        <div class="funnel-pct">60%</div>
+                    </div>
+                    <div class="funnel-step">
+                        <div class="funnel-label" data-i18n="fn3">Проф. курс</div>
+                        <div class="funnel-bar-wrap"><div class="funnel-bar" data-w="30%" style="background:linear-gradient(90deg, var(--uz-green), #34d399);">1 500</div></div>
+                        <div class="funnel-pct">30%</div>
+                    </div>
+                    <div class="funnel-step">
+                        <div class="funnel-label" data-i18n="fn4">Выпуск</div>
+                        <div class="funnel-bar-wrap"><div class="funnel-bar" data-w="10%" style="background:linear-gradient(90deg, #8b5cf6, #a78bfa);">500</div></div>
+                        <div class="funnel-pct">10%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Closing CTA (DARK) -->
+        <div class="slide slide--dark">
+            <div class="bg-grid bg-circuit"></div>
+            <div class="bg-orb" style="width:400px;height:400px;background:var(--uz-gold);top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;"></div>
+            <div class="particle" style="left:20%;bottom:25%;animation-delay:0s;"></div>
+            <div class="particle" style="left:40%;bottom:35%;animation-delay:2s;"></div>
+            <div class="particle" style="left:60%;bottom:20%;animation-delay:4s;"></div>
+            <div class="particle" style="left:80%;bottom:40%;animation-delay:1s;"></div>
+            <div class="slide-inner hero-slide">
+                <div class="anim">
+                    <div class="hero-shield" style="margin-bottom:24px;">
+                        <svg viewBox="0 0 64 64" fill="none">
+                            <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="rgba(200,164,65,0.06)" stroke="var(--uz-gold)" stroke-width="1.5"/>
+                            <path d="M32 14L16 22v10c0 9.6 6.83 18.56 16 21.33 9.17-2.77 16-11.73 16-21.33V22L32 14z" fill="rgba(200,164,65,0.03)" stroke="rgba(200,164,65,0.3)" stroke-width="1"/>
+                            <path d="M24 30l5 5 11-11" stroke="var(--uz-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="anim" style="justify-content:center;font-size:2.4rem;"><span data-i18n="s6_title">Проектная документация и рабочий прототип</span></h2>
+                <p class="closing-mission anim" data-i18n="s6_desc">Полная документация, методология обучения, учебные материалы и рабочий прототип платформы</p>
+                <div class="anim" style="margin-top:24px;">
+                    <div style="display:inline-block;background:white;padding:12px;border-radius:12px;">
+                        <canvas id="qrCanvas" width="140" height="140" style="display:block;"></canvas>
+                    </div>
+                </div>
+                <div class="anim" style="margin-top:12px;">
+                    <a href="https://army.marshub.uz" class="cta-link" target="_blank" style="margin-top:0;">
+                        army.marshub.uz
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                    </a>
+                </div>
+                <div class="anim hero-meta" style="margin-top:16px;" data-i18n="closing_meta">500 MUTAXASSIS / YILIGA</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Nav controls -->
+    <div class="kb-hint" id="kbHint" data-i18n="hint">? &mdash; горячие клавиши</div>
+    <div class="slide-controls">
+        <button class="slide-btn" id="prevBtn" onclick="prevSlide()" disabled>&#8592;</button>
+        <div class="progress-dots" id="dots"></div>
+        <button class="slide-btn" id="nextBtn" onclick="nextSlide()">&#8594;</button>
+        <button class="fs-btn" onclick="toggleFullscreen()" title="Fullscreen">&#x26F6;</button>
+    </div>
+
+<script>
+// Быстрая замена слов во всех языках:
+// [ "что ищем", "на что меняем" ]
+const QUICK_REPLACE = [
+    // ["Проект 2026", "Проект 2027"],
+    // ["Результат 2026-2027", "Результат 2027-2028"]
+];
+
+function applyQuickReplace(dict) {
+    if (!Array.isArray(QUICK_REPLACE) || QUICK_REPLACE.length === 0) return;
+    Object.keys(dict).forEach(langKey => {
+        const langDict = dict[langKey];
+        if (!langDict || typeof langDict !== 'object') return;
+        Object.keys(langDict).forEach(textKey => {
+            const value = langDict[textKey];
+            if (typeof value !== 'string') return;
+            let next = value;
+            QUICK_REPLACE.forEach(pair => {
+                if (!Array.isArray(pair) || pair.length !== 2) return;
+                const from = pair[0];
+                const to = pair[1];
+                if (typeof from !== 'string' || typeof to !== 'string' || from.length === 0) return;
+                next = next.split(from).join(to);
+            });
+            langDict[textKey] = next;
+        });
+    });
+}
+
+const T = {
+    ru: {
+        title:"Цифровой Корпус<br>Министерства обороны", subtitle:"Подготовка военнослужащих в области технологий, ИИ и кибербезопасности в ходе срочной службы",
+        badge:"Проект 2026", hero_meta:"МИНИСТЕРСТВО ОБОРОНЫ РЕСПУБЛИКИ УЗБЕКИСТАН",
+        s1_title:"Порядок обучения", s1_desc:"Трёхэтапная система отбора и подготовки. Каждый этап — фильтр: от массового тестирования до профессионального обучения лучших.",
+        dur1:"1 неделя", n1:"Тестирование и отсев", d1:"Оценка знаний, распределение по группам",
+        dur2:"3 недели", n2:"Базовый курс кибербойца", d2:"Компьютерная грамотность или ИИ в работе",
+        dur3:"9 месяцев", n3:"Проф. курс-специализация", d3:"AI инженер, Кибероборона, БПЛА и FPV",
+        s2_title:"Тестирование и отсев", proc:"Порядок", dur_label:"Протяжённость",
+        s2_proc:"Солдаты в компьютерном классе на территории части группами сдают тест на онлайн-платформе",
+        s2_dist:"Распределение по группам",
+        g1:"Без комп. навыков", g1d:"Базовый курс компьютерной грамотности",
+        g2:"Есть навыки ПК", g2d:"Курс ИИ грамотности",
+        g3:"Продвинутые", g3d:"Менторы (устоз-шогирт)",
+        s3_title:"Базовый курс кибербойца", s3_proc:"Дистанционное обучение через онлайн-платформу в компьютерных классах под наблюдением преподавателей",
+        s3_dur:"3 недели, через день по 2 часа", s3_tracks:"Два трека обучения",
+        t1l:"Для начинающих", t1v:"Компьютерная грамотность: ПК, почта, документы, безопасность",
+        t2l:"Для продвинутых", t2v:"ИИ грамотность: работа с данными, подготовка материалов, AI-инструменты",
+        us_t:"Устоз-шогирт", us_d:"Продвинутые солдаты становятся менторами для остальных. Традиционная узбекская система наставничества, адаптированная для цифрового обучения.",
+        key_label:"Ключевое", key_big:"За время службы <strong>каждый солдат</strong> получит цифровые навыки",
+        s3r_v1_short:"Компьютерная грамотность", s3r_v2_short:"Основы ИИ",
+        s3r_v1:"Курс общей компьютерной грамотности: пользование компьютером, почтой, документами, безопасность ПК",
+        s3r_v2:"Основы ИИ: работа с данными, подготовка материалов с помощью AI-инструментов",
+        s3r_impact_d:"Даже солдаты, не прошедшие на 3 этап, уходят со службы с цифровыми навыками — вклад в цифровизацию страны.",
+        s4_title:"Профессиональный курс", s4_meta:"9 месяцев · ежедневно по 3 часа · дистанционно в компьютерных классах",
+        s4_specs:"Три специализации",
+        sp_ai:"AI инженер", sp_ai_d:"Python, ML, автоматизация, AI-инструменты",
+        sp_cy:"Кибероборона", sp_cy_d:"SOC, мониторинг, реагирование на инциденты",
+        sp_dr:"БПЛА и FPV", sp_dr_d:"Операторы дронов, embedded, прошивки",
+        s5_title:"Результат 2026-2027", bn1:"тестирование", bn2:"базовый курс", bn3:"проф. обучение", bn4:"выпуск",
+        fn1:"Тестирование", fn2:"Базовый курс", fn3:"Проф. курс", fn4:"Выпуск",
+        s6_title:"Проектная документация и рабочий прототип",
+        s6_desc:"Полная документация, методология обучения, учебные материалы и рабочий прототип платформы",
+        closing_meta:"500 СПЕЦИАЛИСТОВ / В ГОД",
+        hint:"? \u2014 горячие клавиши",
+        kb_title:"Горячие клавиши", kb_next:"Следующий слайд", kb_prev:"Предыдущий слайд", kb_fs:"Полный экран", kb_help:"Эта подсказка"
+    },
+    uz: {
+        title:"Mudofaa vazirligi<br>Raqamli korpusi", subtitle:"Harbiy xizmatchilarni texnologiyalar, sun'iy intellekt va kiberxavfsizlik sohasida muddatli xizmat davomida tayyorlash",
+        badge:"Loyiha 2026", hero_meta:"O'ZBEKISTON RESPUBLIKASI MUDOFAA VAZIRLIGI",
+        s1_title:"Ta'lim tartibi", s1_desc:"Uch bosqichli saralash va mutaxassislar tayyorlash tizimi. Har bir bosqich — filtr: ommaviy sinovdan o'tkazishdan eng yaxshilarni professional o'qitishgacha.",
+        dur1:"1 hafta", n1:"Sinovdan o'tkazish va saralash", d1:"Bilim va ko'nikmalarni baholash, guruhlarga taqsimlash",
+        dur2:"3 hafta", n2:"Kiberjangchi bazaviy kursi", d2:"Kompyuter savodxonligi yoki sun'iy intellekt",
+        dur3:"9 oy", n3:"Professional kurs-ixtisoslik", d3:"AI muhandis, Kiberhimoya, Dronlar va FPV",
+        s2_title:"Sinovdan o'tkazish va saralash", proc:"Tartib", dur_label:"Davomiyligi",
+        s2_proc:"Askarlar harbiy qism hududidagi kompyuter sinfida guruhlar bo'lib onlayn platformada test topshiradilar",
+        s2_dist:"Guruhlarga taqsimlash",
+        g1:"Kompyuter ko'nikmalari yo'q", g1d:"Bazaviy kompyuter savodxonligi kursi",
+        g2:"Kompyuter ko'nikmalari bor", g2d:"Sun'iy intellekt savodxonligi kursi",
+        g3:"Ilg'or", g3d:"Mentorlar (ustoz-shogirt)",
+        s3_title:"Kiberjangchi bazaviy kursi", s3_proc:"O'qituvchilar nazoratida kompyuter sinflarida onlayn platforma orqali masofaviy ta'lim",
+        s3_dur:"3 hafta, kun oralab 2 soatdan", s3_tracks:"Ikki ta'lim yo'nalishi",
+        t1l:"Boshlang'ichlar uchun", t1v:"Kompyuter savodxonligi: kompyuter, pochta, hujjatlar, xavfsizlik",
+        t2l:"Ilg'orlar uchun", t2v:"Sun'iy intellekt savodxonligi: ma'lumotlar bilan ishlash, materiallar tayyorlash, AI vositalar",
+        us_t:"Ustoz-shogirt", us_d:"Ilg'or askarlar qolganlar uchun mentorga aylanadi. Raqamli ta'lim uchun moslashtirilgan an'anaviy o'zbek ustoz-shogirt tizimi.",
+        key_label:"Asosiy", key_big:"Xizmat davomida <strong>har bir askar</strong> raqamli ko'nikmalarni egallaydi",
+        s3r_v1_short:"Kompyuter savodxonligi", s3r_v2_short:"SI asoslari",
+        s3r_v1:"Umumiy kompyuter savodxonligi kursi: kompyuter, pochta, hujjatlar, xavfsizlik",
+        s3r_v2:"Sun'iy intellekt asoslari: ma'lumotlar bilan ishlash, AI vositalar yordamida materiallar tayyorlash",
+        s3r_impact_d:"3-bosqichga o'tmagan askarlar ham xizmatdan raqamli ko'nikmalar bilan ketadi — mamlakatni raqamlashtirish uchun hissa.",
+        s4_title:"Professional kurs", s4_meta:"9 oy · har kuni 3 soatdan · kompyuter sinflarida masofaviy",
+        s4_specs:"Uchta ixtisoslik",
+        sp_ai:"AI muhandis", sp_ai_d:"Python, ML, avtomatlashtirish, AI-vositalar",
+        sp_cy:"Kiberhimoya", sp_cy_d:"SOC, monitoring, hodisalarga javob berish",
+        sp_dr:"Dronlar va FPV", sp_dr_d:"Dron operatorlari, embedded, proshivkalar",
+        s5_title:"Natija 2026-2027", bn1:"sinovdan o'tkazish", bn2:"bazaviy kurs", bn3:"prof. ta'lim", bn4:"bitiruvchilar",
+        fn1:"Sinovdan o'tkazish", fn2:"Bazaviy kurs", fn3:"Prof. kurs", fn4:"Bitirish",
+        s6_title:"Loyiha hujjatlari va ishchi prototip",
+        s6_desc:"Loyihaning to'liq hujjatlari, o'qitish metodologiyasi, o'quv materiallari va platformaning ishchi prototipi",
+        closing_meta:"500 MUTAXASSIS / YILIGA",
+        hint:"? \u2014 tezkor tugmalar",
+        kb_title:"Tezkor tugmalar", kb_next:"Keyingi slayd", kb_prev:"Oldingi slayd", kb_fs:"To'liq ekran", kb_help:"Bu yordam"
+    },
+    en: {
+        title:"Digital Corps of<br>the Ministry of Defense", subtitle:"Training military personnel in technology, AI and cybersecurity during mandatory service",
+        badge:"Project 2026", hero_meta:"MINISTRY OF DEFENSE OF THE REPUBLIC OF UZBEKISTAN",
+        s1_title:"Training Pipeline", s1_desc:"Three-stage system of selection and specialist training. Each stage is a filter: from mass testing to professional training of the best.",
+        dur1:"1 week", n1:"Testing & Screening", d1:"Skills assessment, group assignment",
+        dur2:"3 weeks", n2:"Basic Cyber Warrior Course", d2:"Computer literacy or AI fundamentals",
+        dur3:"9 months", n3:"Professional Specialization", d3:"AI Engineer, Cyber Defence, UAV & FPV",
+        s2_title:"Testing & Screening", proc:"Procedure", dur_label:"Duration",
+        s2_proc:"Soldiers take online tests in groups in the computer lab on the military base",
+        s2_dist:"Group Assignment",
+        g1:"No computer skills", g1d:"Basic computer literacy course",
+        g2:"Has PC skills", g2d:"AI literacy course",
+        g3:"Advanced", g3d:"Mentors (ustoz-shogirt)",
+        s3_title:"Basic Cyber Warrior Course", s3_proc:"Distance learning via online platform in computer labs supervised by instructors",
+        s3_dur:"3 weeks, every other day, 2 hours", s3_tracks:"Two Learning Tracks",
+        t1l:"For beginners", t1v:"Computer literacy: PC, email, documents, security",
+        t2l:"For advanced", t2v:"AI literacy: data analysis, content creation, AI tools",
+        us_t:"Ustoz-Shogirt", us_d:"Advanced soldiers become mentors for others. A traditional Uzbek mentorship system adapted for digital education.",
+        key_label:"Key insight", key_big:"During service <strong>every soldier</strong> gains digital skills",
+        s3r_v1_short:"Computer literacy", s3r_v2_short:"AI fundamentals",
+        s3r_v1:"General computer literacy: PC usage, email, documents, PC security",
+        s3r_v2:"AI fundamentals: working with data, creating materials using AI tools",
+        s3r_impact_d:"Even soldiers who don't advance to Stage 3 leave service with digital skills — contributing to the country's digitization.",
+        s4_title:"Professional Course", s4_meta:"9 months · every day, 3 hours · remote in computer labs",
+        s4_specs:"Three Specializations",
+        sp_ai:"AI Engineer", sp_ai_d:"Python, ML, automation, AI tools",
+        sp_cy:"Cyber Defence", sp_cy_d:"SOC, monitoring, incident response",
+        sp_dr:"UAV & FPV", sp_dr_d:"Drone operators, embedded, firmware",
+        s5_title:"Results 2026-2027", bn1:"tested", bn2:"basic course", bn3:"professional", bn4:"graduates",
+        fn1:"Testing", fn2:"Basic course", fn3:"Pro course", fn4:"Graduates",
+        s6_title:"Project Documentation & Working Prototype",
+        s6_desc:"Full documentation, teaching methodology, learning materials and a working platform prototype",
+        closing_meta:"500 SPECIALISTS / PER YEAR",
+        hint:"? \u2014 keyboard shortcuts",
+        kb_title:"Keyboard Shortcuts", kb_next:"Next slide", kb_prev:"Previous slide", kb_fs:"Fullscreen", kb_help:"This help"
+    }
+};
+applyQuickReplace(T);
+
+// ═══ Slides ═══
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+// Build dots
+const dotsContainer = document.getElementById('dots');
+for (let i = 0; i < total; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToSlide(i);
+    dotsContainer.appendChild(dot);
+}
+
+function goToSlide(n) {
+    if (n < 0 || n >= total || n === current) return;
+    const dir = n > current ? 1 : -1;
+    slides[current].querySelectorAll('.anim').forEach(el => { el.style.transitionDelay = '0s'; });
+    slides[current].classList.remove('active');
+    if (dir > 0) slides[current].classList.add('exit-left');
+    const prev = current;
+    setTimeout(() => { slides[prev].classList.remove('exit-left'); }, 600);
+    current = n;
+    slides[current].querySelectorAll('.anim').forEach(el => { el.style.transitionDelay = ''; });
+    slides[current].classList.remove('exit-left');
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    updateControls();
+    animateFunnel();
+    animateCounters();
+}
+function nextSlide() { goToSlide(current + 1); }
+function prevSlide() { goToSlide(current - 1); }
+
+function updateControls() {
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.querySelectorAll('.progress-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+    });
+    // Show lang switcher only on first slide
+    document.querySelector('.lang-switcher').style.opacity = current === 0 ? '1' : '0';
+    document.querySelector('.lang-switcher').style.pointerEvents = current === 0 ? 'auto' : 'none';
+}
+
+// ═══ Keyboard ═══
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+    if (e.key === '?' || e.key === '/') document.getElementById('kbOverlay').classList.toggle('open');
+    if (e.key === 'Escape') document.getElementById('kbOverlay').classList.remove('open');
+    document.getElementById('kbHint').style.opacity = '0';
+});
+
+// ═══ Touch swipe ═══
+let touchX = 0, touchY = 0;
+document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) nextSlide(); else prevSlide();
+    }
+}, { passive: true });
+
+// ═══ Click edges ═══
+document.addEventListener('click', e => {
+    if (e.target.closest('a, button, .lang-switcher, .slide-controls, .kb-overlay')) return;
+    const x = e.clientX, w = window.innerWidth;
+    if (x < w * 0.22) prevSlide();
+    else if (x > w * 0.78) nextSlide();
+});
+
+setTimeout(() => { document.getElementById('kbHint').style.opacity = '0'; }, 6000);
+
+// ═══ Funnel animation ═══
+function animateFunnel() {
+    const funnel = document.getElementById('funnel');
+    if (!funnel) return;
+    const slide = funnel.closest('.slide');
+    if (slide && slide.classList.contains('active')) {
+        setTimeout(() => {
+            funnel.querySelectorAll('.funnel-bar').forEach(bar => {
+                bar.style.width = bar.dataset.w;
+            });
+        }, 400);
+    } else {
+        funnel.querySelectorAll('.funnel-bar').forEach(bar => { bar.style.width = '0'; });
+    }
+}
+
+// ═══ Counter animation ═══
+function animateCounters() {
+    const activeSlide = slides[current];
+    activeSlide.querySelectorAll('[data-counter]').forEach(el => {
+        const target = parseInt(el.dataset.counter);
+        const duration = 1200;
+        const start = performance.now();
+        const format = n => n >= 1000 ? n.toLocaleString('ru-RU').replace(/,/g, ' ') : n.toString();
+        function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = format(Math.round(target * eased));
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    });
+}
+
+// ═══ Fullscreen ═══
+function toggleFullscreen() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    else document.exitFullscreen();
+}
+
+// ═══ Language ═══
+let lang = 'ru';
+function setLang(l) {
+    lang = l;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.lang-btn[onclick="setLang(\'' + l + '\')"]').classList.add('active');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (T[l] && T[l][k]) {
+            if (T[l][k].includes('<')) el.innerHTML = T[l][k];
+            else el.textContent = T[l][k];
+        }
+    });
+    document.documentElement.lang = l === 'uz' ? 'uz' : l === 'en' ? 'en' : 'ru';
+    localStorage.setItem('pres-lang', l);
+}
+
+// ═══ QR Code generator (minimal) ═══
+(function(){
+const qrCanvas=document.getElementById('qrCanvas');
+if(!qrCanvas)return;
+const url='https://army.marshub.uz';
+const img=new Image();
+img.crossOrigin='anonymous';
+img.onload=function(){
+    const ctx=qrCanvas.getContext('2d');
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,140,140);
+    ctx.drawImage(img,0,0,140,140);
+};
+img.onerror=function(){
+    // Fallback: draw text
+    const ctx=qrCanvas.getContext('2d');
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,140,140);
+    ctx.fillStyle='#0a1628';
+    ctx.font='bold 11px Inter,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('army.marshub.uz',70,75);
+};
+img.src='https://api.qrserver.com/v1/create-qr-code/?size=140x140&data='+encodeURIComponent(url)+'&margin=0';
+})();
+
+// Init
+setLang(localStorage.getItem('pres-lang') || 'ru');
+updateControls();
+</script>
+
+</body>
+</html>

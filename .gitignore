@@ -1,0 +1,11 @@
+node_modules
+.next
+.next_old_*
+out
+dist
+.vercel
+*.log
+.DS_Store
+.env.local
+.env.*.local
+data/bot-registrations.json
